@@ -74,7 +74,11 @@ def renderCube(f=1,scaleFToSize=None,t=(0,0,1),R=np.eye(3)):
     plt.title("Cube @ [x=%.1f y=%.1f z=%.1f] f=%f" % (t[0],t[1],t[2],f))
     for i in range(pL.shape[0]):
         u1, v1, u2, v2 = pL[i,:]
-        plt.plot((u1,u2),(v1,v2),lineWidth=2)
+        # Fixme:
+        #  AttributeError: 'Line2D' object has no property 'lineWidth',
+        #  Seems like a typo, changed lineWidth to linewidth, it works.
+        plt.plot((u1,u2),(v1,v2),linewidth=2)
+
                     
     plt.axis('square')
     plt.xlim(-5,5); plt.ylim(-5,5)
