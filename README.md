@@ -3,7 +3,6 @@
 ## Environment Settings
 
 ```bash
-pip install jupyter
-pip install imageio
-pip install matplotlib
+# python --version 3.7
+pip install jupyter imageio matplotlib
 ```
