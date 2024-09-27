@@ -1,6 +1,7 @@
 import numpy as np
 import os
 from common import *
+import cv2
 
 
 ## Image Patches ##
@@ -13,7 +14,26 @@ def image_patches(image, patch_size=(16,16)):
     # Output- results: a list of images of size M x N
 
     # TODO: Use slicing to complete the function
+    H, W = image.shape
+
+    # 调整图像大小，使其能整除16
+    H_new, W_new = H - (H % patch_size[0]), W - (W % patch_size[1])
+    img_gray = cv2.resize(image, (W_new, H_new))
+
+    # 初始化存储切片的列表
     output = []
+
+    # 分割图像并进行归一化
+    for i in range(0, img_gray.shape[0], patch_size[0]):
+        for j in range(0, img_gray.shape[1], patch_size[1]):
+            # divide the image into 16x16 pixel patches
+            patch_tmp = img_gray[i:i + patch_size[0], j:j + patch_size[1]]
+            # normalize
+            patch_mean = np.mean(patch_tmp)
+            patch_std = np.std(patch_tmp)
+            normalized_patch = (patch_tmp - patch_mean) / patch_std
+
+            output.append(normalized_patch)
 
     return output
 
