@@ -4,13 +4,7 @@ import os
 from PIL import Image
 
 def read_img(path, greyscale=True):
-    try:
-        # 尝试打开图像
-        img = Image.open(path)
-    except FileNotFoundError:
-        # 如果文件不存在，打印警告并跳过
-        print(f"Warning: File not found - {path}")
-        return None
+    img = Image.open(path)
     if greyscale:
         img = img.convert('L')
     else:

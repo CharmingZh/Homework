@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="CSE803" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="CV_course" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="CSE803" project-jdk-type="Python SDK" />
 </project>
