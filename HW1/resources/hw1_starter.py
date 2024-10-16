@@ -1,7 +1,7 @@
 # This starter code requires functions in the Dolly Zoom Notebook to work
 import numpy as np
 
-from dolly_zoom import *
+from .dolly_zoom import *
 
 import os
 import imageio

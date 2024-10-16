@@ -42,28 +42,78 @@ def convolve(image, kernel):
     # Input- image: H x W
     #        kernel: h x w
     # Output- convolve: H x W
-
     H, W = image.shape
     h, w = kernel.shape
-
+    # Flip the kernel for convolution (not cross-correlation)
+    flipped_kernel = np.flipud(np.fliplr(kernel))  # Flip both vertically and horizontally
+    # Calculate padding for 'same' output size
+    pad_h = (h - 1) // 2
+    pad_w = (w - 1) // 2
     # Pad the image
     padded_image = np.pad(image,
-                          ((h // 2, h // 2), (w // 2, w // 2)),
+                          ((pad_h, pad_h), (pad_w, pad_w)),
                           mode = 'constant',
                           constant_values = 0
                           )
-
-    output = image.copy()
-
+    output = np.zeros_like(image)
     # Convolution operation
     for i in range(H):
         for j in range(W):
             # Extract the region of interest
             roi = padded_image[i:i + h, j:j + w]
             # Element-wise multiplication and sum
-            output[i, j] = np.sum(roi * kernel)
+            output[i, j] = np.sum(roi * flipped_kernel)
 
     return output
+
+
+def gaussian_kernel(kernel_size=3, sigma=None):
+    """
+    Generate a Gaussian kernel with a given size and standard deviation.
+
+    Parameters:
+    - kernel_size:      Size of the kernel (kernel_size x kernel_size).
+    - sigma:            Standard deviation of the Gaussian distribution. If not provided,
+                        it is calculated using the formula: sigma = sqrt(1 / (2 * log(2))).
+
+    Returns:
+    - kernel_gaussian:  The normalized Gaussian kernel.
+    """
+    if sigma is None:
+        sigma = np.sqrt(1 / (2 * np.log(2)))
+
+    kernel_gaussian = np.zeros((kernel_size, kernel_size))
+
+    for i in range(kernel_size):
+        for j in range(kernel_size):
+            x, y = i - kernel_size // 2, j - kernel_size // 2
+            kernel_gaussian[i, j] = (1 / (2 * np.pi * (sigma ** 2))) * np.exp(-(x ** 2 + y ** 2) / (2 * (sigma ** 2)))
+
+    # Normalize the kernel so that the sum of all elements is 1
+    kernel_gaussian /= np.sum(kernel_gaussian)
+
+    return kernel_gaussian
+
+
+def gaussian_filter(image, kernel_size=3, sigma=None):
+    """
+    Apply Gaussian filter to an image.
+
+    Parameters:
+    - image: H x W (input image).
+    - kernel_size: Size of the Gaussian kernel.
+    - sigma: Standard deviation of the Gaussian distribution. If None, a default is used.
+
+    Returns:
+    - output: H x W (Gaussian filtered image).
+    """
+    # Generate the Gaussian kernel
+    kernel = gaussian_kernel(kernel_size=kernel_size, sigma=sigma)
+
+    # Convolve the image with the Gaussian kernel
+    filtered_image = convolve(image, kernel)
+
+    return filtered_image
 
 
 ## Edge Detection ##
@@ -73,8 +123,8 @@ def edge_detection(image):
     # Output- grad_magnitude: H x W
 
     # TODO: Fix kx, ky
-    kx = np.array([[np.float(-0.5), np.float(0), np.float(0.5)]])  # 1 x 3
-    ky = np.array([[np.float(-0.5)], [np.float(0)], [np.float(0.5)]])  # 3 x 1
+    kx = np.array([[float(-0.5), float(0), float(0.5)]])  # 1 x 3
+    ky = np.array([[float(-0.5)], [float(0)], [float(0.5)]])  # 3 x 1
 
     Ix = convolve(image, kx)
     Iy = convolve(image, ky)
@@ -82,7 +132,7 @@ def edge_detection(image):
     # TODO: Use Ix, Iy to calculate grad_magnitude
     grad_magnitude = np.sqrt(Ix ** 2 + Iy ** 2)
 
-    # 将梯度幅值归一化到 0-255，并转换为 uint8
+    # Normalizzation and transfer into uint8 to viz
     grad_magnitude = (grad_magnitude / np.max(grad_magnitude)) * 255
     grad_magnitude = grad_magnitude.astype(np.uint8)
 
@@ -100,6 +150,7 @@ def sobel_operator(image, normalize=True):
     Gx_kernel = np.array([[1, 0, -1],
                           [2, 0, -2],
                           [1, 0, -1]])
+
     Gy_kernel = np.array([[1, 2, 1],
                           [0, 0, 0],
                           [-1, -2, -1]])
@@ -179,6 +230,7 @@ def main():
     chosen_patches = [patches[i] for i in random_indices]
     chosen_patches = np.hstack(chosen_patches)
     # 将浮点数的 NumPy 数组转换为 8 位整型
+    # print(chosen_patches)
     chosen_patches = np.uint8(chosen_patches * 255)  # 假设图像的值在 [0, 1] 范围内
 
     Image.fromarray(chosen_patches).save("./image_patches/q1_patch.png")
@@ -195,21 +247,14 @@ def main():
     # Q1: No code
 
     # Q2
-
     # TODO: Calculate the kernel described in the question.  There is tolerance for the kernel.
+    # Note by Jiaming: please see 'def gaussian_kernel(kernel_size=3, sigma=None)',
+    #                  I implemented a function for reusability
     sigma = np.sqrt(1 / (2 * np.log(2)))
     kernel_size = 3
-    kernel_gaussian = np.zeros((kernel_size, kernel_size))
 
-    for i in range(kernel_size):
-        for j in range(kernel_size):
-            x, y = i - kernel_size // 2, j - kernel_size // 2
-            kernel_gaussian[i, j] = (1 / (2 * np.pi * (sigma ** 2))) * np.exp(-(x**2 + y**2) / (2 * (sigma ** 2)))
+    filtered_gaussian = gaussian_filter(img, kernel_size=kernel_size, sigma=sigma)
 
-    kernel_gaussian /= np.sum(kernel_gaussian)
-    print(kernel_gaussian)
-
-    filtered_gaussian = convolve(img, kernel_gaussian)
     save_img(filtered_gaussian, "./gaussian_filter/q2_gaussian.png")
 
     # Q3
